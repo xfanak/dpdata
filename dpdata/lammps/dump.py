@@ -75,6 +75,7 @@ def safe_get_posi(lines,cell,orig=np.zeros(3)) :
     zidx = keys.index(coordtype[2])-2
     sel = (xidx, yidx, zidx)
     posis = []
+    lp = np.linalg.norm(cell,axis=1)
     for ii in blk :
         words = ii.split()
         posis.append([float(words[id_idx]), float(words[xidx]), float(words[yidx]), float(words[zidx])])
@@ -82,7 +83,9 @@ def safe_get_posi(lines,cell,orig=np.zeros(3)) :
     posis = np.array(posis)[:,1:4]
     if sf:
         posis = posis@cell
-    return posis
+    else:
+        posis = posis - orig
+    return posis%lp
 
 def get_dumpbox(lines) :
     blk, h = _get_block(lines, 'BOX BOUNDS')
@@ -211,10 +214,9 @@ if __name__ == '__main__' :
     # print(box)
     # np.savetxt('tmp.out', posi - orig, fmt='%.6f')
     # print(system_data(lines))
-    #lines = load_file('su.dump', begin = 0, step = 2)
-    lines = load_file('s.dump', begin = 0, step = 2)
-    dbox, tilt = get_dumpbox(lines)
-    orig, cell = dumpbox2box(dbox, tilt)
-    p = safe_get_posi(lines,cell,orig)
-    #with open('tmp.out', 'w') as fp:
-    #    fp.write('\n'.join(lines))
+    lines = load_file('conf_unfold.dump', begin = 0, step = 1)
+    al = split_traj(lines)
+    s = system_data(lines,['O','H'])
+    #l = np.linalg.norm(s['cells'][1],axis=1)
+    #p = s['coords'][0] + l
+    #np.savetxt('p',p,fmt='%1.10f')
